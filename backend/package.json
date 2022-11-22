@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "0.9.0",
+  "description": "node backend with jwt auth",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "test": "echo 'no tests implemented yet'"
+  },
+  "author": "Peter Sand",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

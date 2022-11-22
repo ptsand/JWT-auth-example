@@ -1,0 +1,21 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^1.1.0",
+    "svelte": "^3.52.0",
+    "sveltik": "^0.1.16",
+    "vite": "^3.2.3"
+  },
+  "dependencies": {
+    "jwt-decode": "^3.1.2",
+    "svelte-navigator": "^3.2.2"
+  }
+}
