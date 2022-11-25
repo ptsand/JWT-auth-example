@@ -4,8 +4,8 @@
 </script>
 
 <div class="alert alert-success text-center w-100">
-    {#if $user.name}
-        Welcome {$user.name}, you have {$user.role.toUpperCase()} priveleges
+    {#if $user}
+        Welcome {$user.username}, you have {$user.role.toUpperCase()} priveleges
         {#await makeReq("/users/me")}
             fetching...
         {:then details} 

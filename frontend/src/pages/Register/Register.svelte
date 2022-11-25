@@ -11,7 +11,7 @@
     let status = { err: false, msg: undefined };
 
     let initialValues = {
-        username: 'testUser1',
+        username: 'user',
         email: 'test@dev.mail',
         password: 'letmein',
     };

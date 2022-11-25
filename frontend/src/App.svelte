@@ -9,7 +9,7 @@
 
   const logoutHandler = ()=>{
     sessionStorage.clear(); // delete tokens
-    $user={name: '', role: '', email: ''};
+    $user=null;
     navigate('/');
   }
 </script>
@@ -26,7 +26,7 @@
           <li class="nav-item">
             <Link class="nav-link active" to="/">Home</Link>
           </li>
-          {#if !$user.name}
+          {#if !$user}
           <li class="nav-item">
             <Link class="nav-link" to="/register">Register</Link>
           </li>

@@ -14,8 +14,8 @@
     let errorMsg;
     
     let initialValues = {
-        username: 'testUser1',
-        password: 'letmein'
+        username: 'testUser',
+        password: 'testPasswordUser'
     };
     
     let validate = values => {
@@ -33,8 +33,8 @@
             sessionStorage.clear(); // clear storage for old tokens
             const res = await makeReq("/auth/login", "post", userCreds);
             const { accessToken, refreshToken } = res;   // destructure
-            const { name, role, email } = jwtDecode(accessToken);
-            $user = { name, role, email };
+            const { username, role, email } = jwtDecode(accessToken);
+            $user = { username, role, email };
             sessionStorage.setItem('accessToken', accessToken);
             sessionStorage.setItem('refreshToken', refreshToken);
             console.log("tokens set in localstorage, userStore:", $user);
