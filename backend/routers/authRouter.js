@@ -2,8 +2,8 @@ import { Router } from "express";
 import { 
     sha256,
     refreshTokens, 
-    signAccessToken, 
-    signRefreshToken, 
+    accessToken, 
+    refreshToken, 
     updateAccessToken,
     revokeRefreshToken
 } from '../utils/tokenHandler.js';
@@ -33,21 +33,27 @@ router.post(`${req_base}/login`, async (req, res) => {
     const user = await userByUsername(username);
     if ( !(user && await argon2.verify(user.password, password)) )
         return res.status(401).send({ message: "Invalid username or password" });
+    if (!user.enabled) res.status(401).send({ message: "User disabled" });
     // create tokens and user context to prevent side jacking, ref:
     // https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html
     const fingerprint = randomBytes(50).toString("hex");
-    const claims = { username: user.username, role: user.role, email: user.email, hash: sha256(fingerprint) };
-    const accessToken = signAccessToken(claims);
-    const refreshToken = signRefreshToken(claims);
+    const { id, role, email_confirmed } = user;
+    const claims = { id, username, role, email_confirmed, hash: sha256(fingerprint) };
+    const tokens = { access: accessToken(claims), refresh: refreshToken(claims) };
     // TODO: use blacklist?
-    refreshTokens.push(refreshToken);
+    refreshTokens.push(tokens.refresh);
     res.cookie('__Secure_Fgp', fingerprint, { 
         httpOnly: true,     // prevent clientside js to read cookie
         sameSite: 'strict', // works with chrome on localhost, safari needs a real domain
         secure: true,       // (localhost is allowed in plaintext though)
         maxAge: 3600*24*7   // 7 days
     });
-    res.json({ accessToken, refreshToken});
+    console.log("sending tokens and fingerprint cookie to authenticated client...");
+    res.json(tokens);
+});
+
+router.post(`${req_base}/refresh`, (req, res) => {
+    updateAccessToken(req, res);
 });
 
 export default router;

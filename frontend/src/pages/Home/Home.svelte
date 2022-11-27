@@ -1,19 +1,19 @@
 <script>
     import { user } from '../../store/globals.js';
-    import makeReq from '../../utils/fetchWrapper.js';
+    import jwtDecode from 'jwt-decode';
+    import { pp } from '../../store/globals.js';
+    import Toast from "../../components/Toast/Toast.svelte";
+    
+    export let registerFocus;
+    
 </script>
-
-<div class="alert alert-success text-center w-100">
-    {#if $user}
-        Welcome {$user.username}, you have {$user.role.toUpperCase()} priveleges
-        {#await makeReq("/users/me")}
-            fetching...
-        {:then details} 
-            {JSON.stringify(details)}
-        {:catch err}
-            {err}
-        {/await}
-    {:else}
-        Please sign up and authenticate to access protected ressources
-    {/if}
+<div use:registerFocus class="alert alert-success w-100">
+    Welcome {$user.username}, recieved signed tokens from backend:
+    <pre class="mb-0"><code>{pp($user.tokens)}</code></pre>
+    Access token after base64 decoding is this json:
+    <pre><code>{pp(jwtDecode($user.tokens.access))}</code></pre>
 </div>
+
+{#if !$user.email_confirmed}
+    <Toast title="Confirmation Bot" message="Please confirm your email, thanks" />
+{/if}

@@ -1,21 +1,19 @@
 <script>
     import { user } from '../../store/globals.js';
     import makeReq from '../../utils/fetchWrapper.js';
+    import { pp } from '../../store/globals.js';
+    export let registerFocus;
 </script>
 
-<div class="alert alert-success text-center w-100">
-    {#if $user.name}
-        {$user.name}, you have {$user.role.toUpperCase()} priveleges
+<div use:registerFocus class="alert alert-success w-100">
+        {$user.username}, you have {$user.role.toUpperCase()} priveleges
         {#await makeReq("/users/me")}
-            fetching...
+            fetching your information...
         {:then details}
             under construction, 
-            fetched user details:
-            {JSON.stringify(details)}
+            fetched user json:
+            <pre><code>{pp(details)}</code></pre>
         {:catch err}
             {err}
         {/await}
-    {:else}
-        Please sign up and authenticate to access protected ressources
-    {/if}
 </div>

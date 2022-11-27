@@ -1,15 +1,17 @@
 <script>
-	import { Router, Link, Route, navigate } from "svelte-navigator";
+  import { Router, Link, Route, navigate } from "svelte-navigator";
+  import PrivateRoute from "./components/PrivateRoute/PrivateRoute.svelte";
   import Home from "./pages/Home/Home.svelte";
   import Register from "./pages/Register/Register.svelte";
   import Login from "./pages/Login/Login.svelte";
   import { user } from "./store/globals.js";
-  import makeReq from "./utils/fetchWrapper.js";
   import Profile from "./pages/Profile/Profile.svelte";
+  import ConfirmEmail from "./pages/Profile/ConfirmEmail.svelte";
 
+  
   const logoutHandler = ()=>{
-    sessionStorage.clear(); // delete tokens
-    $user=null;
+    // delete tokens and navigate home
+    $user = null;
     navigate('/');
   }
 </script>
@@ -30,26 +32,29 @@
           <li class="nav-item">
             <Link class="nav-link" to="/register">Register</Link>
           </li>
-          <li class="nav-item">
-            <Link class="nav-link" to="/login">Login</Link>
-          </li>
           {:else}
           <li class="nav-item">
             <Link class="nav-link" to="/profile">Profile</Link>
           </li>
           <li class="nav-item">
-            <button class="nav-link" on:click="{logoutHandler}">Logout</button>
+            <button class="nav-link btn btn-link" on:click="{logoutHandler}">Logout</button>
           </li>
           {/if}
         </ul>
       </div>
     </div>
   </nav>
-
   <main>
-      <Route path="/"><Home /></Route>
-      <Route path="/register"><Register /></Route>
-      <Route path="/login"><Login /></Route>
-      <Route path="/profile"><Profile /></Route>
+    <PrivateRoute path="/" let:location let:registerFocus>
+      <Home {registerFocus} />
+    </PrivateRoute>
+    <Route path="/register"><Register /></Route>
+    <Route path="/login"><Login /></Route>
+    <PrivateRoute path="/profile" let:location let:registerFocus>
+      <Profile {registerFocus} />
+    </PrivateRoute>
+    <PrivateRoute path="/profile/confirm-email/:code" let:location let:registerFocus>
+      <ConfirmEmail {registerFocus} />
+    </PrivateRoute>
   </main>
 </Router>

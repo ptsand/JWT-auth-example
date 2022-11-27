@@ -1,13 +1,14 @@
 <script>
-    // @ts-nocheck
+
     import { user } from '../../store/globals.js';
     import { Sveltik, Form, Field, ErrorMessage } from 'sveltik';
-    import { useFocus, useNavigate } from "svelte-navigator";
+    import { useFocus, useNavigate, useLocation } from "svelte-navigator";
     import { onMount } from 'svelte';
     import makeReq from '../../utils/fetchWrapper.js';
     import jwtDecode from 'jwt-decode';
 
     const navigate = useNavigate();
+    const location = useLocation();
 
 	const registerFocus = useFocus();
     onMount(()=>registerFocus(document.getElementById("username")));
@@ -30,16 +31,13 @@
 
     let onSubmit = async (userCreds, { setSubmitting }) => {
         try {
-            sessionStorage.clear(); // clear storage for old tokens
-            const res = await makeReq("/auth/login", "post", userCreds);
-            const { accessToken, refreshToken } = res;   // destructure
-            const { username, role, email } = jwtDecode(accessToken);
-            $user = { username, role, email };
-            sessionStorage.setItem('accessToken', accessToken);
-            sessionStorage.setItem('refreshToken', refreshToken);
-            console.log("tokens set in localstorage, userStore:", $user);
+            const tokens = await makeReq("/auth/login", "post", userCreds);
+            const { id, username, role, email_confirmed } = jwtDecode(tokens.access);
+            $user = { id, username, role, tokens, email_confirmed };
+            console.log("userStore:", $user);
             setSubmitting(false);
-            navigate("/"); // navigate home
+            const from = ($location.state && $location.state.from) || "/";
+		    navigate(from, { replace: true });
         } catch (err) {
             errorMsg = err.message;
             setSubmitting(false);

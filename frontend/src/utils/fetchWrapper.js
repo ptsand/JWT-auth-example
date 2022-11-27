@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { get } from 'svelte/store';
-import { BASE_URL } from '../store/globals.js';
+import { BASE_URL, user } from '../store/globals.js';
 import { refreshAccessTokenAndTryAgain, tokenExpired } from './tokenUtil.js';
 
 let fetchArgs; // save to resend original req with new access token
@@ -18,10 +18,18 @@ const makeReq = async (path, method, body) => {
   };
   if (body) options.body = JSON.stringify(body); // optional body
   // authenticate with access token, if present
-  const accessToken = sessionStorage.getItem('accessToken');
-  if (accessToken) {
-    if (tokenExpired(accessToken)) return refreshAccessTokenAndTryAgain(fetchArgs);
-    options.headers.Authorization = `Bearer ${accessToken}`;
+  const tokens = get(user)?.tokens;
+  if (tokens?.access) {
+    if (tokenExpired(tokens.access)) {
+      if (tokenExpired(tokens.refresh)) {
+        // this condition will be handled by private route guard by navigating to login
+        user.set(null); // this w
+        // navigate router to login if lost or expired token[s]
+        // throw new Error("Session lost or expired");
+      }
+      return refreshAccessTokenAndTryAgain(fetchArgs); 
+    }
+    options.headers.Authorization = `Bearer ${tokens.access}`;
   }
   return fetch(`${get(BASE_URL)}/api${path}`, options).then(res => handleErrors(res));
 }

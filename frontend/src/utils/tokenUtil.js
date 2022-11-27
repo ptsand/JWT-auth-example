@@ -1,26 +1,36 @@
 // @ts-nocheck
 import jwtDecode from 'jwt-decode';
 import makeReq from './fetchWrapper.js';
+import { get } from 'svelte/store';
+import { user } from '../store/globals.js';
 
 export const refreshAccessTokenAndTryAgain = async (fetchArgs) => {
-    // handle if tokens are expired or invalid
-    sessionStorage.removeItem("accessToken"); // remove expired token to avoid stack overflow
-    const refreshToken = sessionStorage.getItem('refreshToken');
-    if (!refreshToken || tokenExpired(refreshToken)) throw new Error("Session lost or expired");
+    setAccessToken(null);
+    const refreshToken = get(user).tokens.refresh;
     
     const originalFetchArgs = [ ...fetchArgs ];
     
     return makeReq( // fetch new accessToken
-        "/auth/refresh", "post", { refreshToken: sessionStorage.getItem('refreshToken') }
+        "/auth/refresh", "post", { token: refreshToken }
     ).then(res => {
-        sessionStorage.setItem('accessToken', res.accessToken);
-        console.log("got a new access token:", res.accessToken);
+        setAccessToken(res.token);
+        console.log("refreshed access token:", res.token);
         return makeReq(...originalFetchArgs); // make the original request again (with refreshed accessToken)
     });
 }
 
 export const tokenExpired = token => {
+    if (!token) return true;
     const { exp } = jwtDecode(token); // expires exp seconds after epoch
     const expireTime = exp * 1000; // convert to ms since epoch to match Date.now()
-    if (Date.now() > expireTime) return true;
+    if (Date.now() > expireTime) {
+        return true;
+    }
+}
+
+const setAccessToken = token => {
+    user.update(user => { 
+        user.tokens.access = token;
+        return user;
+    });
 }
