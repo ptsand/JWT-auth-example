@@ -3,7 +3,7 @@ const { createHash } = await import('node:crypto');
 
 let refreshTokens = []; // whitelist
 
-const sha256 = value => createHash("sha256").update(value, "utf8").digest("hex");
+const sha256 = value => createHash("sha3-256").update(value, "utf8").digest("hex");
 
 const accessToken = payload => jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20m' });
 const refreshToken = payload => jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
