@@ -1,15 +1,15 @@
 import { Router } from "express";
 import { 
     sha256,
-    refreshTokens, 
     accessToken, 
     refreshToken, 
     updateAccessToken,
-    revokeRefreshToken
+    blacklistRefreshToken,
+    authenticate
 } from '../utils/tokenHandler.js';
 import * as argon2 from "argon2";
 const { randomBytes } = await import('node:crypto');
-import { userByUsername } from '../database/dbWrapper.js';
+import db from '../database/dbWrapper.js';
 
 const router = Router();
 const req_base = "/api/auth";
@@ -22,17 +22,21 @@ router.post(`${req_base}/refresh`, (req, res) => {
     updateAccessToken(req, res);
 });
 
-router.delete(`${req_base}/logout`, (req, res) => {
-    revokeRefreshToken(req.cookies.token);
-    res.sendStatus(204);
+router.post(`${req_base}/logout`, authenticate, (req, res) => {
+    // blacklist refresh token until expiry
+    if (!blacklistRefreshToken(req.body.token)) return res.sendStatus(400);
+    res.sendStatus(204); 
 });
 
 router.post(`${req_base}/login`, async (req, res) => {
     // verify username and password
     const { username, password } = req.body;
-    const user = await userByUsername(username);
-    if ( !(user && await argon2.verify(user.password, password)) )
+    const user = await db.userByUsername(username);
+    try {
+        if ( !await argon2.verify(user?.password, password) ) throw new Error();
+    } catch (err) {
         return res.status(401).send({ message: "Invalid username or password" });
+    }
     if (!user.enabled) res.status(401).send({ message: "User disabled" });
     // create tokens and user context to prevent side jacking, ref:
     // https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html
@@ -41,7 +45,7 @@ router.post(`${req_base}/login`, async (req, res) => {
     const claims = { id, username, role, email_confirmed, hash: sha256(fingerprint) };
     const tokens = { access: accessToken(claims), refresh: refreshToken(claims) };
     // TODO: use blacklist?
-    refreshTokens.push(tokens.refresh);
+    // refreshTokens.push(tokens.refresh);
     res.cookie('__Secure_Fgp', fingerprint, { 
         httpOnly: true,     // prevent clientside js to read cookie
         sameSite: 'strict', // works with chrome on localhost, safari needs a real domain

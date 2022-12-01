@@ -18,6 +18,7 @@ await db.query(
         role            ENUM('user', 'admin') DEFAULT 'user',
         enabled         BOOLEAN DEFAULT 1, -- default to enabled
         email_confirmed BOOLEAN DEFAULT 0, 
+        INDEX(username),
         CONSTRAINT user_constraints CHECK (CHAR_LENGTH(password) >= 10 AND CHAR_LENGTH(email) > 3)
     );`
 );

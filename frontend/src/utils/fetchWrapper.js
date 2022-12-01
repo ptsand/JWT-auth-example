@@ -22,13 +22,11 @@ const makeReq = async (path, method, body) => {
   if (tokens?.access) {
     if (tokenExpired(tokens.access)) {
       if (tokenExpired(tokens.refresh)) {
-        // this condition will be handled by private route guard by navigating to login
-        user.set(null); // this w
-        // navigate router to login if lost or expired token[s]
-        // throw new Error("Session lost or expired");
+        user.set(null); // make private route guard show login
       }
       return refreshAccessTokenAndTryAgain(fetchArgs); 
     }
+    console.log("ACCESS", tokens.access);
     options.headers.Authorization = `Bearer ${tokens.access}`;
   }
   return fetch(`${get(BASE_URL)}/api${path}`, options).then(res => handleErrors(res));

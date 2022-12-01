@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../utils/tokenHandler.js";
-import { confirmationCode, confirmEmail, saveUser, userByUsername, users } from "../database/dbWrapper.js";
+import db from "../database/dbWrapper.js";
 import { sendConfirmationMail } from "../utils/mailer.js";
 const { randomBytes } = await import('node:crypto');
 
@@ -14,15 +14,15 @@ const req_base = "/api/users";
 router.get(`${req_base}/me`, authenticate, async (req, res) => {
     // important: req.user.name is NOT comming from the client,
     // but extracted from a VERIFIED token in authenticate middleware function
-    const user = { ...await userByUsername(req.user.username) };
+    const user = { ...await db.userByUsername(req.user.username) };
     delete user.password;   // don't send password hash to client
     res.send(user);
 });
 
 router.get(`${req_base}/confirm-email/:code`, authenticate, async (req, res) => {
-    const trueCode = await confirmationCode(req.user.id);
+    const trueCode = await db.confirmationCode(req.user.id);
     if (req.params.code === trueCode) {
-        await confirmEmail(req.user.id);
+        await db.confirmEmail(req.user.id);
         return res.send({ message: "Your email was successfully confirmed, thank you." });
     }
     res.status(400).send({ message: "Your email was already confirmed!" });
@@ -33,7 +33,7 @@ router.post(req_base, async (req, res) => {
     const confirmationCode = randomBytes(10).toString("hex");
     const user = { ...req.body, role: roles[0], confirmationCode};  // set role, code
     try {
-        await saveUser(user);
+        await db.saveUser(user);
         sendConfirmationMail(user.email, confirmationCode);
         res.send({ message:"Registration successful" });
     } catch (err) {
@@ -43,7 +43,7 @@ router.post(req_base, async (req, res) => {
 
 // protected endpoint (admins only) TODO: fix
 router.get(req_base, authenticate, (req, res) => {
-    if (req.user.role === roles[1]) return res.send(users);
+    if (req.user.role === roles[1]) return res.send(db.users());
     res.sendStatus(403);
 });
 

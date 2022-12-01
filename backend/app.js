@@ -3,7 +3,7 @@ import authRouter from "./routers/authRouter.js";
 import userRouter from "./routers/userRouter.js"
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { setupConnectionPooling } from "./database/dbWrapper.js";
+import db from "./database/dbWrapper.js";
 import * as dotenv from 'dotenv';
 dotenv.config({ path: ".env.dev" });    // load .env file
 
@@ -30,5 +30,5 @@ const PORT = process.env.PORT || 8080;
 const server = app.listen(PORT, HOST, (error) => {
     if (error) console.log(error);
     console.log("Server is running on port", server.address().port);
-    setupConnectionPooling();           // use DB connection pool
+    db.setupConnectionPooling();           // use DB connection pool
 });

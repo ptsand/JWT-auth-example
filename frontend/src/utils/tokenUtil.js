@@ -20,10 +20,13 @@ export const refreshAccessTokenAndTryAgain = async (fetchArgs) => {
 }
 
 export const tokenExpired = token => {
-    if (!token) return true;
-    const { exp } = jwtDecode(token); // expires exp seconds after epoch
-    const expireTime = exp * 1000; // convert to ms since epoch to match Date.now()
-    if (Date.now() > expireTime) {
+    // console.log(token);
+    if (!token || token === null) return true;
+    try {
+        const { exp } = jwtDecode(token); // expires exp seconds after epoch
+        const expireTime = exp * 1000; // convert to ms since epoch to match Date.now()
+        if (Date.now() > expireTime) return true;
+    } catch (err) {
         return true;
     }
 }

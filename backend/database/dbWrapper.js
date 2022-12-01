@@ -3,7 +3,7 @@ import * as argon2 from "argon2";
 
 let db; // to be set when environment is loaded
 
-export const setupConnectionPooling = () => {
+const setupConnectionPooling = () => {
     try {
         db = mysql.createPool({
             host: process.env.DB_HOST,
@@ -18,18 +18,18 @@ export const setupConnectionPooling = () => {
     return db;
 }
 
-export const userByUsername = async (username) => {
+const userByUsername = async (username) => {
     if (!username) return false;
     const [[user]] = await db.query('SELECT * FROM users WHERE username = ?;', [username]);
     return user;
 }
 
-export const users = async () => {
+const users = async () => {
     const [users] = await db.query('SELECT * FROM users;');
     return users;
 }
 
-export const saveUser = async (user) => {
+const saveUser = async (user) => {
     user.password = await argon2.hash(user.password); // argon2 recommended by owasp
     // ref: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
     const { username, password, email, role, confirmationCode } = user;
@@ -40,14 +40,16 @@ export const saveUser = async (user) => {
         [res[0].insertId, confirmationCode]));
 }
 
-export const confirmEmail = async (userID) => {
+const confirmEmail = async (userID) => {
     return await Promise.all([
         db.query('UPDATE users SET email_confirmed = 1 WHERE id = ?;', [userID]),
         db.query('DELETE FROM confirmation_codes WHERE user_id = ?;', [userID])
     ]);
 }
 
-export const confirmationCode = async (userID) => {
+const confirmationCode = async (userID) => {
     const [[row]] = await db.query('SELECT code FROM confirmation_codes WHERE user_id = ?;', [userID]);
     return row?.code;
 }
+
+export default { setupConnectionPooling, userByUsername, users, saveUser, confirmEmail, confirmationCode}

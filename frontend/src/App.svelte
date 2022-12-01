@@ -7,10 +7,12 @@
   import { user } from "./store/globals.js";
   import Profile from "./pages/Profile/Profile.svelte";
   import ConfirmEmail from "./pages/Profile/ConfirmEmail.svelte";
+  import makeReq from "./utils/fetchWrapper";
 
-  
-  const logoutHandler = ()=>{
-    // delete tokens and navigate home
+  const logoutHandler = async () => {
+    // blacklist refresh token until expiry
+    await makeReq("/auth/logout", "post", { token: $user.tokens.refresh });
+    // delete user state and navigate home
     $user = null;
     navigate('/');
   }
