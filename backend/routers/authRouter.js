@@ -22,7 +22,7 @@ router.post(`${req_base}/refresh`, (req, res) => {
     updateAccessToken(req, res);
 });
 
-router.post(`${req_base}/logout`, authenticate, (req, res) => {
+router.post(`${req_base}/logout`, (req, res) => {
     // blacklist refresh token until expiry
     if (!blacklistRefreshToken(req.body.token)) return res.sendStatus(400);
     res.sendStatus(204); 

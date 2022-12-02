@@ -12,7 +12,7 @@ const updateAccessToken = (req, res)=> {
   let { token } = req.body;
   if (!validUserContext(req, token)) return res.sendStatus(401);
   // check refreshToken against blacklist
-  if (refreshTokens.includes(token)) return res.sendStatus(403);
+  if (refreshTokensBlacklist.includes(token)) return res.sendStatus(403);
   jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err !== null) return res.sendStatus(403);
     // delete issued at and expires claims to get a new non expired token

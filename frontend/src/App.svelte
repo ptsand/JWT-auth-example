@@ -11,10 +11,17 @@
 
   const logoutHandler = async () => {
     // blacklist refresh token until expiry
-    await makeReq("/auth/logout", "post", { token: $user.tokens.refresh });
-    // delete user state and navigate home
-    $user = null;
-    navigate('/');
+    try {
+      delete $user.tokens.access; // do not refresh access token on logout
+      await makeReq("/auth/logout", "post", { token: $user.tokens.refresh });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      // delete user state and navigate home
+      $user = null;
+      // console.log("user:", JSON.stringify($user));
+      navigate('/');
+    }
   }
 </script>
 
