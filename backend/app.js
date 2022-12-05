@@ -1,4 +1,6 @@
 import express from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import authRouter from "./routers/authRouter.js";
 import userRouter from "./routers/userRouter.js"
 import cors from "cors";
@@ -16,8 +18,26 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
+app.use(helmet());                      // set security headers
+
+// setup req rate limiting
+const generalLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 80
+});
+app.use(generalLimiter);
+
+const authLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 6, // Limit each IP to 6 requests per `window`
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+app.use("/api/auth/login", authLimiter);
+
 app.use(authRouter);
 app.use(userRouter);
+
 
 // last middleware handles not found
 app.use(function (req, res){

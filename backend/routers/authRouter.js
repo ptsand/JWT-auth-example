@@ -4,8 +4,7 @@ import {
     accessToken, 
     refreshToken, 
     updateAccessToken,
-    blacklistRefreshToken,
-    authenticate
+    blacklistRefreshToken
 } from '../utils/tokenHandler.js';
 import * as argon2 from "argon2";
 const { randomBytes } = await import('node:crypto');
@@ -13,10 +12,6 @@ import db from '../database/dbWrapper.js';
 
 const router = Router();
 const req_base = "/api/auth";
-
-router.get(req_base, (req, res) => {
-    res.send("auth");
-});
 
 router.post(`${req_base}/refresh`, (req, res) => {
     updateAccessToken(req, res);
@@ -54,10 +49,6 @@ router.post(`${req_base}/login`, async (req, res) => {
     });
     console.log("sending tokens and fingerprint cookie to authenticated client...");
     res.json(tokens);
-});
-
-router.post(`${req_base}/refresh`, (req, res) => {
-    updateAccessToken(req, res);
 });
 
 export default router;
